@@ -25,10 +25,12 @@ struct WriterApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            let document = DocumentManager.shared.createNewDocument()
+            DocumentContentView(document: document)
         }
         .modelContainer(sharedModelContainer)
         .commands {
+            FileCommands()
             ViewCommands()
         }
     }
