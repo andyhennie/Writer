@@ -303,30 +303,6 @@ class WindowController: NSObject, NSWindowDelegate {
         }
     }
     
-    // Debug method to dump window state
-    func dumpWindowState() {
-        guard let window = window else {
-            logger.info("📊 No window to dump")
-            return
-        }
-        
-        logger.info("📊 === WINDOW STATE DUMP ===")
-        logger.info("📊 isTitleBarHidden: \(self.isTitleBarHidden)")
-        logger.info("📊 titleVisibility: \(window.titleVisibility.rawValue)")
-        logger.info("📊 titlebarAppearsTransparent: \(window.titlebarAppearsTransparent)")
-        logger.info("📊 toolbarStyle: \(window.toolbarStyle.rawValue)")
-        logger.info("📊 hiddenViews count: \(self.hiddenViews.count)")
-        
-        if let contentView = window.contentView,
-           let themeFrame = contentView.superview {
-            logger.info("📊 ThemeFrame subviews: \(themeFrame.subviews.count)")
-            for (index, subview) in themeFrame.subviews.enumerated() {
-                let className = String(describing: type(of: subview))
-                logger.info("📊   [\(index)] \(className) - hidden: \(subview.isHidden) - frame: \(String(describing: subview.frame))")
-            }
-        }
-        logger.info("📊 === END DUMP ===")
-    }
     
     deinit {
         logger.info("💀 WindowController deinit")

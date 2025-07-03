@@ -12,7 +12,6 @@ import AppKit
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var documents: [TextDocument]
-    @State private var isPrinting = false
     @State private var isTitleBarHidden = false
     @State private var hoverRevealed = false
     @State private var mouseMonitor: Any?
@@ -31,42 +30,13 @@ struct ContentView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            PaddedTextEditor(
-                text: Binding(
-                    get: { document.content },
-                    set: { document.content = $0 }
-                ),
-                font: .monospacedSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
-            )
-            
-            HStack {
-                Spacer()
-                HStack(spacing: 8) {
-                    if isPrinting {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle())
-                            .scaleEffect(0.5)
-                            .frame(width: 12, height: 12)
-                    }
-                    Button(isTitleBarHidden ? "Show" : "Hide") {
-                        toggleTitleBar()
-                    }
-                    .keyboardShortcut("t", modifiers: .command)
-                    Button("Debug") {
-                        WindowController.shared.dumpWindowState()
-                    }
-                    .keyboardShortcut("d", modifiers: .command)
-                    Button("Print") {
-                        printTodos()
-                    }
-                    .disabled(isPrinting)
-                    .keyboardShortcut("p", modifiers: .command)
-                }
-                .padding(8)
-            }
-            .background(Color(NSColor.controlBackgroundColor))
-        }
+        PaddedTextEditor(
+            text: Binding(
+                get: { document.content },
+                set: { document.content = $0 }
+            ),
+            font: .monospacedSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
+        )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(NSColor.textBackgroundColor).ignoresSafeArea())
         .onAppear {
@@ -106,24 +76,6 @@ struct ContentView: View {
         }
     }
     
-    private func printTodos() {
-        isPrinting = true
-        
-        Task {
-            do {
-                try CUPSPrintManager.shared.printTodosNatively(from: document.content)
-            } catch {
-                // Print errors are handled silently for better UX
-            }
-            
-            // Show spinner for 1 second regardless of print completion
-            try? await Task.sleep(nanoseconds: 1_000_000_000)
-            
-            await MainActor.run {
-                isPrinting = false
-            }
-        }
-    }
     
     private func installEventMonitors() {
         removeEventMonitors()
