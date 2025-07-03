@@ -28,5 +28,35 @@ struct WriterApp: App {
             ContentView()
         }
         .modelContainer(sharedModelContainer)
+        .commands {
+            ViewCommands()
+        }
     }
+}
+
+struct ViewCommands: Commands {
+    @ObservedObject private var titleBarState = TitleBarState.shared
+    
+    var body: some Commands {
+        CommandMenu("View") {
+            Toggle("Hide Title Bar", isOn: Binding(
+                get: { titleBarState.isHidden },
+                set: { _ in 
+                    NotificationCenter.default.post(name: .toggleTitleBar, object: nil)
+                }
+            ))
+            .keyboardShortcut("t", modifiers: .command)
+        }
+    }
+}
+
+class TitleBarState: ObservableObject {
+    static let shared = TitleBarState()
+    @Published var isHidden = false
+    
+    private init() {}
+}
+
+extension Notification.Name {
+    static let toggleTitleBar = Notification.Name("toggleTitleBar")
 }

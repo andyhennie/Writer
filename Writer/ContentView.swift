@@ -74,8 +74,20 @@ struct ContentView: View {
                 WindowController.shared.configure(window: window, titleBarHidden: isTitleBarHidden)
             }
             installEventMonitors()
+            
+            // Listen for menu toggle notifications
+            NotificationCenter.default.addObserver(
+                forName: .toggleTitleBar,
+                object: nil,
+                queue: .main
+            ) { _ in
+                toggleTitleBar()
+            }
         }
-        .onDisappear { removeEventMonitors() }
+        .onDisappear { 
+            removeEventMonitors()
+            NotificationCenter.default.removeObserver(self, name: .toggleTitleBar, object: nil)
+        }
     }
     
     
@@ -85,6 +97,7 @@ struct ContentView: View {
         let previousResponder = window.firstResponder
 
         isTitleBarHidden.toggle()
+        TitleBarState.shared.isHidden = isTitleBarHidden
         WindowController.shared.setTitleBar(hidden: isTitleBarHidden, for: window)
         hoverRevealed = false
 
