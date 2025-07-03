@@ -17,6 +17,7 @@ struct ContentView: View {
     @State private var mouseMonitor: Any?
     @State private var keyMonitor: Any?
     @State private var keyGlobalMonitor: Any?
+    @State private var fontSize: CGFloat = NSFont.systemFontSize
     
     private let hoverTriggerBand: CGFloat = 50   // Size of the hover zone at top (px)
     
@@ -35,7 +36,7 @@ struct ContentView: View {
                 get: { document.content },
                 set: { document.content = $0 }
             ),
-            font: .monospacedSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
+            font: .monospacedSystemFont(ofSize: fontSize, weight: .regular)
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(NSColor.textBackgroundColor).ignoresSafeArea())
@@ -60,6 +61,13 @@ struct ContentView: View {
         }
     }
     
+    private func increaseFontSize() {
+        fontSize = min(fontSize + 2, 48)
+    }
+    
+    private func decreaseFontSize() {
+        fontSize = max(fontSize - 2, 8)
+    }
     
     private func toggleTitleBar() {
         guard let window = NSApplication.shared.keyWindow else { return }
@@ -86,12 +94,11 @@ struct ContentView: View {
         }
 
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [self] event in
-            handleKeyDown(event)
-            return event
+            return handleKeyDown(event)
         }
 
         keyGlobalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [self] event in
-            handleKeyDown(event)
+            _ = handleKeyDown(event)
         }
     }
 
@@ -116,14 +123,27 @@ struct ContentView: View {
         }
     }
 
-    private func handleKeyDown(_ event: NSEvent) {
-        guard isTitleBarHidden, let window = NSApplication.shared.keyWindow else { return }
+    private func handleKeyDown(_ event: NSEvent) -> NSEvent? {
+        // Handle font size shortcuts
+        if event.modifierFlags.contains(.command) {
+            if event.charactersIgnoringModifiers == "=" || event.charactersIgnoringModifiers == "+" {
+                increaseFontSize()
+                return nil // Consume the event to prevent error sound
+            } else if event.charactersIgnoringModifiers == "-" {
+                decreaseFontSize()
+                return nil // Consume the event to prevent error sound
+            }
+        }
+        
+        guard isTitleBarHidden, let window = NSApplication.shared.keyWindow else { return event }
 
         // Only act if title bar currently visible (hover reveal)
         if window.titleVisibility == .visible {
             WindowController.shared.setTitleBar(hidden: true, for: window)
             hoverRevealed = false
         }
+        
+        return event
     }
 }
 
@@ -165,6 +185,9 @@ struct PaddedTextEditor: NSViewRepresentable {
         let textView = nsView.documentView as! NSTextView
         if textView.string != text {
             textView.string = text
+        }
+        if textView.font != font {
+            textView.font = font
         }
     }
     
