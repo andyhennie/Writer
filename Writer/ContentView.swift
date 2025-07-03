@@ -142,7 +142,7 @@ struct PaddedTextEditor: NSViewRepresentable {
         textView.font = font
         textView.textColor = NSColor.textColor
         textView.backgroundColor = NSColor.textBackgroundColor
-        textView.insertionPointColor = NSColor.textColor
+        textView.insertionPointColor = NSColor.systemBlue
         
         // Set text container insets for padding (top, left, right - no bottom)
         textView.textContainerInset = NSSize(width: 32, height: 32) // Left/right: 32pt, top/bottom: 32pt each
